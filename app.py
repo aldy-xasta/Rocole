@@ -1,8 +1,8 @@
 import streamlit as st
 from PIL import Image
-import numpy as np
-# import tensorflow as tf  # Aktifkan jika model siap
-# from tensorflow.keras.models import load_model
+import torch
+from torchvision import transforms
+from efficientnet_pytorch import EfficientNet
 
 # ============================
 # Konfigurasi Halaman
@@ -14,6 +14,18 @@ st.set_page_config(page_title="RoCole Lite - Diagnosa Daun Kopi", layout="center
 # ============================
 with open("css/style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ============================
+# Load Model EfficientNet
+# ============================
+@st.cache_resource
+def load_model():
+    model = EfficientNet.from_name('efficientnet-b0', num_classes=3)
+    model.load_state_dict(torch.load("model/GCLD_EfficientNet.pth", map_location="cpu"))
+    model.eval()
+    return model
+
+model = load_model()
 
 # ============================
 # Header / Branding
@@ -28,59 +40,66 @@ st.markdown("---")
 st.markdown("""
     <div class="diagnose-card">
         <h5 class="diagnose-title">Start Diagnosis</h5>
-        <p class="diagnose-desc">Upload gambar daun atau ambil foto untuk analisis penyakit daun kopi.</p>
+        <p class="diagnose-desc">Upload gambar daun kopi untuk analisis penyakit secara otomatis.</p>
 """, unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
-    take_photo_clicked = st.button("Take a Photo", use_container_width=True)
-with col2:
-    upload_image_clicked = st.button("Upload Image", use_container_width=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ============================
-# Input Kamera / Upload
+# Upload Gambar
 # ============================
 image = None
-if take_photo_clicked:
-    camera_photo = st.camera_input("Ambil Foto Daun")
-    if camera_photo:
-        image = Image.open(camera_photo)
+uploaded_file = st.file_uploader("Upload file gambar daun", type=["jpg", "jpeg", "png"], key="file_uploader")
 
-if upload_image_clicked:
-    uploaded_file = st.file_uploader("Pilih file gambar daun", type=["jpg", "jpeg", "png"])
-    if uploaded_file:
-        image = Image.open(uploaded_file)
+if uploaded_file is not None:
+    try:
+        filename = getattr(uploaded_file, "name", "").lower()
+        if filename.endswith((".jpg", ".jpeg", ".png")):
+            image = Image.open(uploaded_file)
+        else:
+            st.error("❌ Format file tidak valid. Gunakan JPG, JPEG, atau PNG.")
+            st.stop()
+    except Exception as e:
+        st.error("❌ Gagal membaca file. Coba upload ulang.")
+        st.stop()
 
 # ============================
 # Diagnosa
 # ============================
 if image is not None:
-    st.image(image, caption=" Gambar Daun", use_column_width=True)
+    st.image(image, caption="Gambar Daun", use_container_width=True)
 
     if st.button("Diagnosa Sekarang"):
         with st.spinner("Menganalisis gambar..."):
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406],
+                                     [0.229, 0.224, 0.225])
+            ])
+            image_rgb = image.convert("RGB")
+            img_tensor = transform(image_rgb).unsqueeze(0)
 
-            # ================================
-            # Jika model sudah siap, aktifkan ini:
-            # ================================
-            # model = load_model("model/leaf_model.h5")
-            # img = image.resize((224, 224))  # Sesuaikan input model
-            # img_array = np.array(img) / 255.0
-            # img_array = np.expand_dims(img_array, axis=0)
-            # prediction = model.predict(img_array)
-            # pred_label = np.argmax(prediction)
-            # labels = ["Sehat", "Leaf Blight", "Leaf Rust"]
-            # hasil = labels[pred_label]
+            with torch.no_grad():
+                output = model(img_tensor)
+                pred_label = torch.argmax(output, dim=1).item()
 
-            # ================================
-            # Sementara (dummy)
-            hasil = "Leaf Blight"
+            # Update label sesuai klasifikasi baru
+            labels = ["Sehat", "Red Spider Mite", "Rush"]
+            hasil = labels[pred_label]
 
-        st.success(f"Hasil Diagnosa: Daun menunjukkan gejala *{hasil}* ")
+        # Warna kartu hasil
+        result_class = "result-healthy" if hasil == "Sehat" else "result-sick"
+
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="diagnosis-result {result_class}">
+                <strong>Hasil Diagnosa:</strong> Daun menunjukkan gejala <em>{hasil}</em>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 else:
-    st.markdown("<p style='text-align: center; color: gray;'>Silakan pilih metode input untuk memulai diagnosis.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: gray;'>Silakan upload gambar terlebih dahulu.</p>", unsafe_allow_html=True)
 
 # ============================
 # Footer
