@@ -1,4 +1,5 @@
 streamlit
+torch
+torchvision
+efficientnet_pytorch
 Pillow
-numpy
-tensorflow
