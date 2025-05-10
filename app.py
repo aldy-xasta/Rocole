@@ -88,8 +88,13 @@ if image is not None:
             labels = ["Sehat", "Red Spider Mite", "Rush"]
             hasil = labels[pred_label]
 
-        # Warna kartu hasil
-        result_class = "result-healthy" if hasil == "Sehat" else "result-sick"
+        # Warna kartu hasil berdasarkan label
+        if hasil == "Sehat":
+             result_class = "result-healthy"
+        elif hasil == "Red Spider Mite":
+            result_class = "result-warning"
+        else:  # Rush
+            result_class = "result-sick"
 
         st.markdown(f"""
         <div class="result-card">
