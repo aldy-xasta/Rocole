@@ -86,3 +86,40 @@ img {
     color: #888;
     margin: 50px 0 20px 0;
 }
+
+/* Kartu hasil diagnosa */
+.result-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Umum */
+.diagnosis-result {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Sehat → Hijau */
+.result-healthy {
+    background-color: #e0f7ec;
+    color: #2e7d32;
+}
+
+/* Red Spider Mite → Oranye */
+.result-warning {
+    background-color: #fff4e5;
+    color: #e65100;
+}
+
+/* Rush → Merah */
+.result-sick {
+    background-color: #fdecea;
+    color: #b71c1c;
+}
