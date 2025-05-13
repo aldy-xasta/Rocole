@@ -1,5 +1,7 @@
 streamlit
 torch
 torchvision
-efficientnet_pytorch
-Pillow
+efficientnet-pytorch
+opencv-python
+pillow
+numpy
