@@ -123,3 +123,40 @@ img {
     background-color: #fdecea;
     color: #b71c1c;
 }
+.stApp {
+    background: #f0fdf4;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .main-title {
+    text-align:center;
+    color:#2e8b57;
+    font-size:2.5rem;
+    margin-bottom:0.2rem;
+  }
+  .subtitle {
+    text-align:center;
+    color:#4f4f4f;
+    font-size:1.1rem;
+    margin-top:0;
+    margin-bottom:1rem;
+  }
+  .diagnose-card, .upload-card {
+    width:80%;
+    margin:0 auto 1.5rem;
+  }
+  hr {
+    border:none;
+    border-top:1px solid #ddd;
+  }
+  .footer {
+    text-align:center;
+    color:#888;
+    font-size:0.9rem;
+    margin-top:2rem;
+  }
+  /* paksa teks dalam alert jadi lebih gelap */
+.stAlert, 
+.stAlert > div, 
+.stAlert p {
+  color: #333 !important;
+}
